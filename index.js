@@ -96,4 +96,15 @@ app.get("/api/users/auth", auth, (req, res) => {
   });
 });
 
+//로그아웃 -토큰 지우기
+app.get("/api/users/logout", auth, (req, res) => {
+  //auth 미들웨어 에서 토큰을 비교해서 맞다면 req에 유저정보를 넣어준다
+  User.findOneAndUpdate({ _id: req.user._id }, { token: "" }, (err, user) => {
+    if (err) return res.json({ success: false, err });
+    return res.status(200).send({
+      success: true,
+    });
+  });
+});
+
 app.listen(port, () => console.log(`express on ${port}`));
