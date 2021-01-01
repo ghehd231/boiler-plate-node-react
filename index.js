@@ -6,7 +6,7 @@ const cookieParser = require("cookie-parser");
 
 //환경 변수(process.env.NODE_ENV)개발/배포 환경 분기
 const config = require("./config/key");
-
+const { auth } = require("./middleware/auth"); //인증처리
 const { User } = require("./models/User");
 //application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -31,7 +31,7 @@ app.get("/", (req, res) => res.send("hello"));
 
 //route
 
-app.post("/register", (req, res) => {
+app.post("/api/users/register", (req, res) => {
   //회원가입 할때 필요한 정보들을 client에서 가져오면
   //그것들을 데이터 베이스에 넣어준다.
   const user = new User(req.body);
@@ -44,7 +44,7 @@ app.post("/register", (req, res) => {
   });
 });
 
-app.post("/login", (req, res) => {
+app.post("/api/users/login", (req, res) => {
   //요청된 이메일을 디비에서 찾는다.
   User.findOne({ email: req.body.email }, (err, user) => {
     if (!user) {
@@ -77,4 +77,23 @@ app.post("/login", (req, res) => {
     });
   });
 });
+
+//auth 관련 (로그인 할 떄 쿠키에 저장한 값과 서버에서 발행한 토큰을 비교해서)
+//지금 로그인 한 유저가 사이트를 사용가능한 유저인지 체크
+// , auth ,는 미들웨어
+app.get("/api/users/auth", auth, (req, res) => {
+  //여기까지 왔다는 것은 auth 미들웨어를 통과해서 req에 토큰과 유저정보를 가지고 있다는 뜻
+  // role : 0은 일반유저 0이 아니면 관리자
+  res.status(200).json({
+    _id: req.user._id,
+    isAdmin: req.user.role === 0 ? false : true,
+    isAuth: true,
+    email: req.user.email,
+    name: req.user.name,
+    lastname: req.user.lastname,
+    role: req.user.role,
+    image: req.user.image,
+  });
+});
+
 app.listen(port, () => console.log(`express on ${port}`));
