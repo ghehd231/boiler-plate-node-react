@@ -27,10 +27,10 @@ const userSchema = mongoose.Schema({
     type: String,
   },
   tokenExp: {
-    type: number, //토큰 유효기간
+    type: Number, //토큰 유효기간
   },
 });
 
 const User = mongoose.model("User", userSchema);
 
-module.export = User;
+module.exports = { User };

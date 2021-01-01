@@ -104,3 +104,6 @@ dist
 .tern-port
 
 node_modules
+
+# 개발환경 일 떄 mongo연결 정보 숨기기 위해
+dev.js
