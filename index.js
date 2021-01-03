@@ -8,6 +8,7 @@ const cookieParser = require("cookie-parser");
 const config = require("./config/key");
 const { auth } = require("./middleware/auth"); //인증처리
 const { User } = require("./models/User");
+
 //application/x-www-form-urlencoded
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -15,21 +16,50 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(cookieParser());
 
-const mongoose = require("mongoose");
+// const mongoose = require("mongoose");
 
-mongoose
-  .connect(config.mongoURI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useCreateIndex: true,
-    useFindAndModify: false,
-  })
-  .then(() => console.log("mongoDB connected.."))
-  .catch((err) => console.log("errored" + err));
+// mongoose
+//   .connect(config.mongoURI, {
+//     useNewUrlParser: true,
+//     useUnifiedTopology: true,
+//     useCreateIndex: true,
+//     useFindAndModify: false,
+//   })
+//   .then(() => console.log("mongoDB connected.."))
+//   .catch((err) => console.log("errored" + err));
 
-app.get("/", (req, res) => res.send("hello"));
+//mariaDB
+const mariadb = require("mariadb");
+// const pool = mariadb.createPool({
+//   host: "127.0.0.1", //로컬 mariaDB | 서버연결시 도메인 네임 또는 ip
+//   user: "root",//로컬에서 연결할때 root | 서버에서는 서버에서의 유저네임
+//   password: "rldjrdl2",
+//   connectionLimit: 5,
+// });
+require("dotenv/config");
 
+const pool = mariadb.createPool({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PWD,
+});
+async function asyncFunction() {
+  let conn;
+  try {
+    conn = await pool.getConnection();
+    console.log("mariaDB connected...11");
+    const rows = await conn.query("show databases");
+    console.log(rows);
+  } catch (error) {
+    console.log("error~~~~");
+    throw error;
+  } finally {
+    if (conn) return conn.end();
+  }
+}
+const temp = asyncFunction();
 //route
+app.get("/", (req, res) => res.send("hello"));
 
 app.post("/api/users/register", (req, res) => {
   //회원가입 할때 필요한 정보들을 client에서 가져오면
